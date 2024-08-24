@@ -9,7 +9,14 @@ class BankDataType:
     bca_credit = 'bca_credit'
     bca_debit = 'bca_debit'
 
-class BCACreditCardTransactionValidator:
+
+class BankDataTypeValidatorInterface:
+
+    def process_data(self, path_to_file: str) -> pd.DataFrame:
+        pass
+
+
+class BCACreditCardTransactionValidator(BankDataTypeValidatorInterface):
 
     locale = "id_ID"
 
@@ -54,7 +61,8 @@ class BCACreditCardTransactionValidator:
             return '-'.join(date_parts)
         return date
 
-class BCADebitCardTransactionValidator:
+
+class BCADebitCardTransactionValidator(BankDataTypeValidatorInterface):
 
     locale = "id_ID"
 
@@ -87,4 +95,21 @@ class BCADebitCardTransactionValidator:
             
         except ValueError:
             return False
-        
+
+
+class BankDataTypeValidatorFacade:
+    
+    bca_credit_card_transation_validator: BCACreditCardTransactionValidator
+    bca_debit_card_transation_validator: BCADebitCardTransactionValidator
+
+    def __init__(self):
+        self.bca_credit_card_transation_validator = BCACreditCardTransactionValidator()
+        self.bca_debit_card_transaction_validator = BCADebitCardTransactionValidator()
+
+    def process(self, category: str, path_to_file: str) -> pd.DataFrame:
+        if category == BankDataType.bca_credit:
+            return self.bca_credit_card_transation_validator.process_data(path_to_file)
+        if category == BankDataType.bca_debit:
+            return self.bca_debit_card_transaction_validator.process_data(path_to_file)
+
+bank_data_type_validator_facade = BankDataTypeValidatorFacade()        
