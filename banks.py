@@ -5,10 +5,11 @@ from datetime import datetime
 from extensions import FileExtensions
 from calendar_utils import abbreviation
 
-class Banks:
-    bca = 'bca'
+class BankDataType:
+    bca_credit = 'bca_credit'
+    bca_debit = 'bca_debit'
 
-class BCATransactionValidator:
+class BCACreditCardTransactionValidator:
 
     locale = "id_ID"
 
@@ -43,7 +44,6 @@ class BCATransactionValidator:
             return True
             
         except ValueError:
-            # If parsing fails, it's not a valid date
             return False
         
     def _convert_date_to_locale(self, date: str):
@@ -53,3 +53,38 @@ class BCATransactionValidator:
             date_parts[1] = abbreviation.convert_id_to_en(date_parts[1])
             return '-'.join(date_parts)
         return date
+
+class BCADebitCardTransactionValidator:
+
+    locale = "id_ID"
+
+    def __init__(self):
+        pass
+
+    def process_data(self, path_to_file: str) -> pd.DataFrame:
+        transaction_data = []
+
+        if path_to_file.endswith(FileExtensions.pdf):
+            pdf = pymupdf.open(path_to_file)
+
+            for page in pdf:
+                text_blocks = page.get_text("blocks")
+                for text_block in text_blocks:
+                    text_data = text_block[4].split('\n')
+                    if self.is_valid_transaction(text_data):
+                        transaction_data.append(text_data)
+            return pd.DataFrame(transaction_data)
+        else :
+            raise Exception("Extension is not supported")
+
+    def is_valid_transaction(self, text_component):
+        date_format = "%d/%m"
+        try:
+            date = text_component[0]
+
+            datetime.strptime(date, date_format)
+            return True
+            
+        except ValueError:
+            return False
+        
