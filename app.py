@@ -40,6 +40,7 @@ def process_file():
 def combine():    
     path_to_processed_resource = os.path.join(os.getcwd(), 'resource', 'processed')
 
+    list_df = []
     for category in os.listdir(path_to_processed_resource):
         # For some reason there is .DS_Store file in this which I can't delete
         try: 
@@ -47,16 +48,15 @@ def combine():
         except NotADirectoryError:
             continue
 
-        list_df = []
         path_to_processed_resource_with_category = os.path.join(path_to_processed_resource, category)
-        for file_name in os.listdir(path_to_processed_resource):
+        for file_name in os.listdir(path_to_processed_resource_with_category):
             path_to_file = os.path.join(path_to_processed_resource_with_category, file_name)
             list_df.append(pd.read_csv(path_to_file))
 
         destination_csv = os.path.join(path_to_processed_resource, 'combined', 'combined.csv')
         
-        master_df = pd.concat(list_df, axis=0)
-        master_df.to_csv(destination_csv)
+    master_df = pd.concat(list_df, axis=0)
+    master_df.to_csv(destination_csv)
 
 
 def main():
